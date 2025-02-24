@@ -7,14 +7,15 @@ app.http('createUser', {
     headers: {
         'Content-Type': 'application/json'
     },
-    handler: async function (req,context){
+    handler: async function (req, context) {
         console.log("Context:", context);
         const client = connect_client();
         try {
-
-            const { name, email, age } = req.body;
-            console.log("req.body", req.body);
-
+            const bodyText = await req.text();
+          
+            // Parse JSON
+            const body = JSON.parse(bodyText);
+            const { name, email, age } = body;
             if (!name || !email || !age) {
                 return context.res = {
                     status: 400,
@@ -41,6 +42,7 @@ app.http('createUser', {
                 })
             }
         } catch (error) {
+            console.log(`error`, error);
             return context.res = {
                 status: 500,
                 success: false,

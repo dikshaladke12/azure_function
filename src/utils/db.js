@@ -16,7 +16,7 @@ const connect_client = () => {
     return new Client({
         user: 'postgres',
         host: '127.0.0.1',
-        database: 'user_database',
+        database: 'user_database1',
         password: 'postgres',
         port: 5432,
     })
@@ -35,8 +35,6 @@ const createUserTable = async () => {
                 age INT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )`;
-
-
             console.log("table created")
         await connect_client.query(query);
     } catch (error) {
