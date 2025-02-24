@@ -33,10 +33,11 @@ const createUserTable = async () => {
                 name VARCHAR(100) NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
                 age INT,
+                password VARCHAR(100) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )`;
             console.log("table created")
-        await connect_client.query(query);
+        await client.query(query);
     } catch (error) {
         console.error('Error creating user table:', error);
     } finally {

@@ -1,0 +1,10 @@
+## globally install azure function tools
+ 
+npm install -g azure-functions-core-tools@4 --unsafe-perm true
+ 
+## Create a new Azure Functions project
+ 
+func init MyFunctionApp --template "HTTP Trigger" --authlevel "Function"
+ 
+## to create a new function
+func new --template "HTTPTrigger" --name "MyFunction"

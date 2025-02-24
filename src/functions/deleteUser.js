@@ -4,16 +4,27 @@ const { connect_client, closeDb, connectDb } = require("../utils/db");
 app.http("deleteUser", {
     methods: ['DELETE'],
     authLevel: 'anonymous',
-    handler: async function (context, req) {
+    handler: async function (req, context) {
         const client = connect_client();
+        console.log(req.query, "egkfdhgdfkhg")
         try {
-            // const bodyText = await req.text();
-            // console.log("Raw body received:", bodyText);
 
-            // // Parse JSON body
+
+            const url = new URL(req.url);
+            const id = url.searchParams.get("id");
+            if (!id) {
+                return context.res = {
+                    status: 400,
+                    success: false,
+                    body: JSON.stringify({
+                        error: "user Id required"
+                    })
+                }
+            }
+            // const bodyText = await req.text();
             // const body = JSON.parse(bodyText);
-            // console.log("Parsed body:", body);
-            const { id } = request.query.get('id');;
+            // // const id = req.query; 
+            // const {id}  = body;
             console.log("Parsed id:", id);
             if (!id) {
                 return context.res = {

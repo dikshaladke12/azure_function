@@ -8,6 +8,13 @@
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
+    "bcrypt": "^5.1.1",
+    "crypto": "^1.0.1",
+    "formidable": "^3.5.2",
+    "fs": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.0",
+    "path": "^0.12.7",
     "pg": "^8.13.3"
   },
   "main": "src/{index.js,functions/*.js}"
