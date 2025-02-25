@@ -6,64 +6,64 @@ const path = require('path')
 const fs = require('fs')
 
 
-// app.http('createUser', {
-//     methods: ['POST'],
-//     authLevel: 'anonymous',
-//     headers: {
-//         'Content-Type': 'application/json'
-//     },
-//     handler: async function (req, context) {
-//         const client = connect_client();
-//         try {
-//             const bodyText = await req.text();
+app.http('createUser', {
+    methods: ['POST'],
+    authLevel: 'anonymous',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    handler: async function (req, context) {
+        const client = connect_client();
+        try {
+            const bodyText = await req.text();
 
-//             // Parse JSON
-//             const body = JSON.parse(bodyText);
-//             const { name, email, age, password } = body;
-//             if (!name || !email || !age ||!password) {
-//                 return context.res = {
-//                     status: 400,
-//                     success: false,
-//                     body: JSON.stringify({
-//                         error: "All the fields are required"
-//                     })
-//                 }
-//             }
+            // Parse JSON
+            const body = JSON.parse(bodyText);
+            const { name, email, age, password } = body;
+            if (!name || !email || !age ||!password) {
+                return context.res = {
+                    status: 400,
+                    success: false,
+                    body: JSON.stringify({
+                        error: "All the fields are required"
+                    })
+                }
+            }
 
-//             const hashedPassword = await bcrypt.hash(password, 10);
-//             await connectDb(client);
-//             await createUserTable();
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await connectDb(client);
+            await createUserTable();
 
-//             const query = 'INSERT INTO users (name, email, age, password) VALUES ($1, $2, $3, $4) RETURNING *';
-//             const values = [name, email, age,hashedPassword]
-//             const result = await client.query(query, values);
+            const query = 'INSERT INTO users (name, email, age, password) VALUES ($1, $2, $3, $4) RETURNING *';
+            const values = [name, email, age,hashedPassword]
+            const result = await client.query(query, values);
 
-//             return context.res = {
-//                 status: 200,
-//                 success: true,
-//                 body: JSON.stringify({
-//                     message: "user created",
-//                     body: result.rows[0]
-//                 })
-//             }
-//         } catch (error) {
-//             console.log(`error`, error);
-//             return context.res = {
-//                 status: 500,
-//                 success: false,
-//                 body: JSON.stringify({
-//                     error: error.message
-//                 })
-//             }
-//         }
-//         finally {
-//             if (client) {
-//                 await closeDb(client);
-//             }
+            return context.res = {
+                status: 200,
+                success: true,
+                body: JSON.stringify({
+                    message: "user created",
+                    body: result.rows[0]
+                })
+            }
+        } catch (error) {
+            console.log(`error`, error);
+            return context.res = {
+                status: 500,
+                success: false,
+                body: JSON.stringify({
+                    error: error.message
+                })
+            }
+        }
+        finally {
+            if (client) {
+                await closeDb(client);
+            }
 
-//         }
-//     }
-// });
+        }
+    }
+});
 
 
 // app.http("createUser", {
