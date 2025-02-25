@@ -10,6 +10,7 @@
     "@azure/functions": "^4.0.0",
     "bcrypt": "^5.1.1",
     "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
     "formidable": "^3.5.2",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",

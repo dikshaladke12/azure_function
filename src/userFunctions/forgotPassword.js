@@ -1,10 +1,9 @@
-require('dotenv').config();
 const { app } = require('@azure/functions')
 const { connectDb, connect_client, closeDb } = require('../utils/db');
 const nodemailer = require('nodemailer')
 const crypto = require('crypto');
 
-app.http("forgotPassword", {
+app.http("forgotPassword1", {
     methods: ['POST'],
     authLevel: 'anonymous',
     headers: {
@@ -23,7 +22,7 @@ app.http("forgotPassword", {
             }
 
             await connectDb(client);
-            const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+            const result = await client.query('SELECT * FROM userTable WHERE email = $1', [email]);
 
             if (result.rowCount === 0) {
                 return context.res = {
@@ -33,20 +32,21 @@ app.http("forgotPassword", {
                 }
             }
             const resetToken = crypto.randomBytes(32).toString('hex');
-            const resetTokenExpires = new Date(Date.now() + 3600000); // 1 hour
+            const resetTokenExpires = new Date(Date.now() + 3600000); 
 
-            const updateQuery = `UPDATE users SET reset_token=$1, reset_token_expiry=$2 WHERE email = $3`;
+            const updateQuery = `UPDATE userTable SET reset_token=$1, reset_token_expiry=$2 WHERE email = $3`;
             await client.query(updateQuery, [resetToken, resetTokenExpires, email])
             
             const transporter = nodemailer.createTransport({
                 service: 'gmail',
                 auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASS
+                    user: 'dikshaladke12@gmail.com',
+                    pass: 'pisr busv jglb ojcj'
                 }
             })
 
-            const reset_link = `http://localhost:7071/resetPassword?token=${resetToken}`
+            const reset_link = `http://localhost:7071/resetPassword?resetToken=${resetToken}`;
+
             await transporter.sendMail({
                 from: 'Diksha Ladke <dikshaladke12@gmail.com>',
                 to: email,

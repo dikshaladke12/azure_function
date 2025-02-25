@@ -17,11 +17,11 @@ const createTableforUser = async () => {
             last_name VARCHAR(100),
             image VARCHAR(255),
             country_code VARCHAR(10) NOT NULL CHECK (country_code ~ '^\\+[1-9][0-9]{0,2}$'),
-            phone BIGINT UNIQUE,
+            phone VARCHAR(20) UNIQUE,
             password VARCHAR(255) NOT NULL,
             is_email_verified BOOLEAN DEFAULT FALSE,
             is_phone_verified BOOLEAN DEFAULT FALSE,
-            invitation_status VARCHAR(50)
+            invitation_status VARCHAR(50) CHECK (invitation_status IN ('pending', 'accepted', 'declined'))
         );`
 
         console.log("Table Created");
