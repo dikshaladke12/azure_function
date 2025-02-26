@@ -1,6 +1,6 @@
 const { app } = require('@azure/functions');
-const { connectDb, closeDb, connect_client } = require('../utils/db')
-const { createDepartment } = require('../utils/department');
+const { connectDb, closeDb, connect_client } = require('../tables/db')
+const { createDepartment } = require('../tables/department');
 
 app.http("addDepartment", {
     methods: ['POST'],
@@ -26,7 +26,7 @@ app.http("addDepartment", {
             await connectDb(client);
             await createDepartment();
 
-            const checkUserQuery = 'SELECT id FROM userTable WHERE id = $1';
+            const checkUserQuery = 'SELECT * FROM userTable WHERE id = $1';
             const userResult = await client.query(checkUserQuery, [created_by]);
 
             if (userResult.rowCount === 0) {
@@ -35,6 +35,14 @@ app.http("addDepartment", {
                     body: JSON.stringify({ error: "User with this ID does not exist." })
                 };
             }
+            const user = userResult.rows[0];
+            if (!user.is_superuser) {
+                return context.res = {
+                    status: 403,
+                    body: JSON.stringify({ error: "You must be an admin to add a department." })
+                };
+            }
+
             const query = 'INSERT INTO department (dept_name, description, image, created_by) VALUES ($1, $2, $3, $4) RETURNING *';
             const values = [dept_name, description, image || null, created_by]
             const result = await client.query(query, values)

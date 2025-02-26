@@ -1,9 +1,9 @@
+require('dotenv').config();
 const { app } = require('@azure/functions');
-const { connectDb, closeDb, connect_client } = require('../utils/db')
+const { connectDb, closeDb, connect_client } = require('../tables/db')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const SECRETE_KEY = "secret_key"
 
 app.http("userSignin", {
     methods: ['POST'],
@@ -19,7 +19,7 @@ app.http("userSignin", {
             const bodyText = await req.text();
             const body = JSON.parse(bodyText);
             const { email, password } = body;
-            if (!email || !password ) {
+            if (!email || !password) {
                 return context.res = {
                     status: 400,
                     success: false,
@@ -58,7 +58,7 @@ app.http("userSignin", {
 
             const token = jwt.sign(
                 { id: user.id, email: user.email, role: user.is_superuser ? "admin" : "staff" },
-                SECRETE_KEY,
+                process.env.SECRET_KEY,
                 { expiresIn: '1h' }
             )
 
@@ -79,8 +79,8 @@ app.http("userSignin", {
                         last_name: user.last_name,
                         country_code: user.country_code,
                         phone: user.phone,
-                        role: user.is_superuser?"admin":"staff",
-                        last_login : new Date()
+                        role: user.is_superuser ? "admin" : "staff",
+                        last_login: new Date()
 
                     }
                 })

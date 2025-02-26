@@ -20,8 +20,10 @@ const createTableforUser = async () => {
             phone VARCHAR(20) UNIQUE,
             password VARCHAR(255) NOT NULL,
             is_email_verified BOOLEAN DEFAULT FALSE,
-            is_phone_verified BOOLEAN DEFAULT FALSE,
-            invitation_status VARCHAR(50) CHECK (invitation_status IN ('pending', 'accepted', 'declined'))
+            is_phone_verified BOOLEAN DEFAULT FALSE,           
+            invitation_status VARCHAR(50) CHECK (invitation_status IN ('pending', 'accepted', 'declined')),
+            role_id INTEGER,
+            FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
         );`
 
         console.log("Table Created");

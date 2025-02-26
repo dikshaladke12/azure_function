@@ -1,5 +1,6 @@
 const { app } = require('@azure/functions');
-const { connectDb, closeDb, connect_client } = require('../utils/db')
+const { connectDb, closeDb, connect_client } = require('../tables/db')
+
 
 app.http("updatedepartmentDetails", {
     methods: ['PUT'],

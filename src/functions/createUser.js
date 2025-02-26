@@ -1,5 +1,6 @@
 const { app } = require('@azure/functions');
-const { connectDb, createUserTable, connect_client, closeDb } = require('../utils/db')
+const { connectDb, closeDb, connect_client } = require('../tables/db')
+
 const bcrypt = require('bcrypt')
 const formidable = require('formidable')
 const path = require('path')

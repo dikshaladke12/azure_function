@@ -1,5 +1,6 @@
 const { app } = require('@azure/functions');
-const { connect_client, closeDb, connectDb } = require("../utils/db");
+const { connectDb, closeDb, connect_client } = require('../tables/db')
+
 
 app.http("deleteUser", {
     methods: ['DELETE'],

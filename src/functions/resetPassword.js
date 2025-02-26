@@ -1,5 +1,5 @@
 const { app } = require('@azure/functions')
-const { connectDb, connect_client, closeDb } = require('../utils/db');
+const { connectDb, closeDb, connect_client } = require('../tables/db')
 const nodemailer = require('nodemailer')
 const bcrypt = require('bcrypt')
 

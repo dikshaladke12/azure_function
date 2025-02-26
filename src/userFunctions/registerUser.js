@@ -72,12 +72,10 @@
 // });
 
 
-
-
 const { app } = require('@azure/functions');
-const { connectDb, connect_client, closeDb } = require('../utils/db');
+const { connectDb, closeDb, connect_client } = require('../tables/db')
 const bcrypt = require('bcrypt');
-const { createTableforUser } = require('../utils/userTable');
+const { createTableforUser } = require('../tables/userTable');
 
 app.http('registerUser', {
     methods: ['POST'],
@@ -86,13 +84,15 @@ app.http('registerUser', {
         'Content-Type': 'application/json'
     },
     handler: async function (req, context) {
+        console.log(req,"req");
+        
         const client = connect_client();
         try {
             const bodyText = await req.text();
             const body = JSON.parse(bodyText);
-            const { first_name, last_name, email, country_code, phone, password, is_staff, is_manager } = body;
+            const { first_name, last_name, email, country_code, phone, password, is_staff, is_manager, role_id } = body;
 
-            if (!first_name || !last_name || !country_code || !phone || !email || !password) {
+            if (!first_name || !last_name || !country_code || !phone || !email || !password || !role_id) {
                 return context.res = {
                     status: 400,
                     success: false,
@@ -101,6 +101,9 @@ app.http('registerUser', {
                     })
                 };
             }
+
+            await connectDb(client);
+            await createTableforUser();
 
             const countryCodeRegex = /^\+[1-9][0-9]{0,2}$/;
             if (!countryCodeRegex.test(country_code)) {
@@ -113,9 +116,22 @@ app.http('registerUser', {
                 };
             }
 
+
+            const roleQuery = `SELECT * FROM roles WHERE id = $1`;
+            const roleResult = await client.query(roleQuery, [role_id]);
+            if (roleResult.rowCount === 0) {
+                return context.res = {
+                    status: 400,
+                    success: false,
+                    body: JSON.stringify({
+                        error: "Invalid role ID"
+                    })
+                };
+            }
+
+
             const hashedPassword = await bcrypt.hash(password, 10);
-            await connectDb(client);
-            await createTableforUser();
+            
 
             // Check if this is the first user
             const countQuery = `SELECT COUNT(*) FROM userTable`;
@@ -136,10 +152,10 @@ app.http('registerUser', {
             }
 
             const query = `
-                INSERT INTO userTable (first_name, last_name, email, country_code, phone, password, is_superuser, is_staff, is_manager) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+                INSERT INTO userTable (first_name, last_name, email, country_code, phone, password, is_superuser, is_staff, is_manager, role_id) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
                 RETURNING *`;
-            const values = [first_name, last_name, email, country_code, phone, hashedPassword, is_superuser, is_staff || false, is_manager || false];
+            const values = [first_name, last_name, email, country_code, phone, hashedPassword, is_superuser, is_staff || false, is_manager || false, role_id];
 
             const result = await client.query(query, values);
 

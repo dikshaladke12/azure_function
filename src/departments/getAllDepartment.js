@@ -1,5 +1,6 @@
 const { app } = require('@azure/functions');
-const { connectDb, connect_client, closeDb } = require('../utils/db')
+const { connectDb, closeDb, connect_client } = require('../tables/db')
+const { verify_token } = require('../authentication/verifyToken')
 
 app.http('getAllDepartment', {
     methods: ['GET'],
@@ -8,12 +9,38 @@ app.http('getAllDepartment', {
         const client = connect_client()
 
         try {
+            // console.log("hhhhhhhhhhhh");
+            
+            // const authHeader = req.headers['authorization'];
+            // if (!authHeader) {
+            //     context.res = {
+            //         status: 401,
+            //         body: JSON.stringify({
+            //             success: false,
+            //             message: 'Authorization token is required.',
+            //         }),
+            //     };
+            //     return;
+            // }
+            // console.log(authHeader);
+            // const decodedToken = await verify_token(authHeader);
+            // if (!decodedToken) {
+            //     context.res = {
+            //         status: 401,
+            //         body: JSON.stringify({
+            //             success: false,
+            //             message: 'Invalid or expired token.',
+            //         }),
+            //     };
+            //     return;
+            // }
+
             await connectDb(client);
             const url = new URL(req.url);
-            const page = parseInt(url.searchParams.get("page")) || 1; 
-            const search = url.searchParams.get("search") || ""; 
-            const limit = 5; 
-            const offset = (page - 1) * limit; 
+            const page = parseInt(url.searchParams.get("page")) || 1;
+            const search = url.searchParams.get("search") || "";
+            const limit = 5;
+            const offset = (page - 1) * limit;
 
             console.log(`Fetching page: ${page}, search: ${search}`);
 

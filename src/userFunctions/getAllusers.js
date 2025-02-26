@@ -1,5 +1,5 @@
 const { app } = require('@azure/functions');
-const { connectDb, connect_client, closeDb } = require('../utils/db')
+const { connectDb, connect_client, closeDb } = require('../tables/db')
 
 app.http('getAllusers', {
     method: ['GET'],
@@ -12,7 +12,7 @@ app.http('getAllusers', {
             const url = new URL(req.url);
             const page = parseInt(url.searchParams.get("page")) || 1; 
             const search = url.searchParams.get("search") || ""; 
-            const limit = 1; 
+            const limit = 10; 
             const offset = (page - 1) * limit; 
 
             console.log(`Fetching page: ${page}, search: ${search}`);

@@ -1,7 +1,10 @@
+require('dotenv').config();
 const { app } = require('@azure/functions')
-const { connectDb, connect_client, closeDb } = require('../utils/db');
-const nodemailer = require('nodemailer')
+const { connectDb, closeDb, connect_client } = require('../tables/db');
+const { oneTimeLink } = require('../tables/oneTimeLink')
 const crypto = require('crypto');
+
+const {transporter} = require('../utils/transporter');
 
 app.http("forgotPassword1", {
     methods: ['POST'],
@@ -13,6 +16,7 @@ app.http("forgotPassword1", {
         const client = connect_client();
         try {
             const { email } = await req.json()
+
             if (!email) {
                 return context.res = {
                     status: 400,
@@ -22,6 +26,8 @@ app.http("forgotPassword1", {
             }
 
             await connectDb(client);
+            await oneTimeLink()
+
             const result = await client.query('SELECT * FROM userTable WHERE email = $1', [email]);
 
             if (result.rowCount === 0) {
@@ -31,24 +37,37 @@ app.http("forgotPassword1", {
                     body: JSON.stringify({ error: "User not found" })
                 }
             }
+
+            const userId = result.rows[0].id;
+
             const resetToken = crypto.randomBytes(32).toString('hex');
-            const resetTokenExpires = new Date(Date.now() + 3600000); 
+            // const resetTokenExpires = new Date(Date.now() + 3600000);
+            const resetTokenExpires = new Date(Date.now() + 60000); //2min
 
-            const updateQuery = `UPDATE userTable SET reset_token=$1, reset_token_expiry=$2 WHERE email = $3`;
-            await client.query(updateQuery, [resetToken, resetTokenExpires, email])
-            
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: 'dikshaladke12@gmail.com',
-                    pass: 'pisr busv jglb ojcj'
-                }
-            })
+            const existingToken = await client.query(`
+                    SELECT *
+                    FROM oneTimeLink
+                    WHERE user_id =$1
+                `, [userId])
 
-            const reset_link = `http://localhost:7071/resetPassword?resetToken=${resetToken}`;
+            if (existingToken.rowCount > 0) {
+                await client.query(`
+                    UPDATE oneTimeLink
+                    SET token=$1, expires_at=$2, code_type=$3, is_expired= $4
+                    WHERE user_id=$5
+                `, [resetToken, resetTokenExpires, 'forgot-password', false, userId])
+            }
+            else {
+                await client.query(`
+                    INSERT INTO oneTimeLink (user_id, token, expires_at, code_type, is_expired)
+                    VALUES ($1, $2, $3, $4, $5)
+                `, [userId, resetToken, resetTokenExpires, 'forgot-password', false])
+            }
+
+            const reset_link = `http://localhost:7071/api/resetPassword1?resetToken=${resetToken}`;
 
             await transporter.sendMail({
-                from: 'Diksha Ladke <dikshaladke12@gmail.com>',
+                from: `Diksha Ladke ${process.env.SMTP_USER}`,
                 to: email,
                 subject: 'Reset Password request',
                 text: `You requested a password reset. Click the following link to reset your password: ${reset_link}`
