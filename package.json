@@ -18,5 +18,5 @@
     "path": "^0.12.7",
     "pg": "^8.13.3"
   },
-  "main": "src/{index.js,functions/*.js,userFunctions/*.js,departments/*.js,staff/*.js,Manager/*.js}"
+  "main": "src/{functions/*.js,userFunctions/*.js,departments/*.js,staff/*.js,Manager/*.js}"
 }

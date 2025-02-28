@@ -42,12 +42,12 @@ app.http("addStaff", {
 
             // const hashedPassword = await bcrypt.hash(password, 10);
             const query = `
-                    INSERT INTO userTable (first_name, last_name, email, country_code, phone, role_id, is_staff,invitation_status) 
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+                    INSERT INTO userTable (first_name, last_name, email, country_code, phone, role_id, is_staff,invitation_status, created_by) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
                     RETURNING *
                 `;
 
-            const values = [first_name, last_name, email, country_code, phone, 3, true, "pending"];
+            const values = [first_name, last_name, email, country_code, phone, 3, true, "pending",superuserID];
             const result = await client.query(query, values);
 
             const staff_details = result.rows[0];

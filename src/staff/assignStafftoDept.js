@@ -1,98 +1,88 @@
 const { app } = require('@azure/functions');
-const { connect_client, connectDb, closeDb } = require('../tables/db');
+const { connectDb, closeDb, connect_client } = require('../tables/db')
 
-app.http("assignStaffToDept", {
-    methods: ["POST"],
+app.http('assignStaffToDept', {
+    methods: ['POST'],
     authLevel: 'anonymous',
     handler: async function (req, context) {
         const client = connect_client();
         try {
             await connectDb(client);
-            const { department_id, staff_id } = await req.json();
-            if (!department_id || !staff_id) {
+            const { department_id, staff_ids } = await req.json();
+
+            if (!department_id || !staff_ids || !Array.isArray(staff_ids) || staff_ids.length === 0) {
                 return context.res = {
                     status: 400,
-                    success: false,
-                    body: JSON.stringify({ error: 'Department ID and Staff ID are required' })
-                }
-            }
-            const checkStaffId = await client.query(
-                `   SELECT * 
-                    FROM userTable 
-                    WHERE id = $1 AND is_staff = true AND is_active = true AND is_deleted = false
-                `, [staff_id]
-            );
-
-            if (checkStaffId.rowCount === 0) {
-                return context.res = {
-                    status: 404,
-                    success: false,
-                    body: JSON.stringify({ error: 'Active staff not found or staff is deleted' })
+                    body: JSON.stringify({ error: 'Department ID and a list of staff IDs are required' })
                 };
             }
-            // const checkStaffId = await client.query(
-            //     `   SELECT * 
-            //         FROM userTable 
-            //         WHERE id = $1 AND is_staff = true
-            //     `, [staff_id]
-            // )
-            // if (checkStaffId.rowCount === 0) {
-            //     return context.res = {
-            //         status: 404,
-            //         success: false,
-            //         body: JSON.stringify({ error: 'Staff not found' })
-            //     }
-            // }
-            const checkDeptId = await client.query(
-                `   SELECT * 
-                    FROM department 
-                    WHERE id = $1
-                `, [department_id]
-            )
-            if (checkDeptId.rowCount === 0) {
+
+            const checkDept = await client.query(
+                `SELECT * FROM department WHERE id = $1`,
+                [department_id]
+            );
+            if (checkDept.rowCount === 0) {
                 return context.res = {
                     status: 404,
-                    success: false,
                     body: JSON.stringify({ error: 'Department not found' })
-                }
+                };
             }
 
-            const result = await client.query(
-                `
-                    INSERT INTO staff_departments (department_id, staff_id)
-                    VALUES ($1, $2)
-                    RETURNING *
-                `, [department_id, staff_id]
-            )
-            if (result.rowCount === 0) {
+            const validStaffQuery = `
+                SELECT id 
+                FROM userTable 
+                WHERE id = ANY($1) AND is_staff = true AND is_active = true AND is_deleted = false
+            `;
+            const validStaffResult = await client.query(validStaffQuery, [staff_ids]);
+            const validStaffIds = validStaffResult.rows.map(row => row.id);
+
+            const invalidStaffIds = staff_ids.filter(id => !validStaffIds.includes(id));
+
+            if (validStaffIds.length === 0) {
                 return context.res = {
                     status: 404,
-                    success: false,
-                    body: JSON.stringify({ error: 'Staff not assigned to the department' })
-                }
+                    body: JSON.stringify({
+                        error: 'No valid staff members found',
+                        invalid_staff_ids: invalidStaffIds
+                    })
+                };
             }
+
+            const insertValues = validStaffIds.map((staff_id, index) => `($${index * 2 + 1}, $${index * 2 + 2})`).join(',');
+            const queryParams = validStaffIds.flatMap(staff_id => [staff_id, department_id]);
+
+            const insertQuery = `
+                INSERT INTO staff_departments (staff_id, department_id) 
+                VALUES ${insertValues} 
+                ON CONFLICT DO NOTHING 
+                RETURNING *;
+            `;
+
+            const insertResult = await client.query(insertQuery, queryParams);
+
             return context.res = {
                 status: 200,
-                success: true,
                 body: JSON.stringify({
-                    message: 'Staff assigned to department'
+                    status: 200,
+                    success: true,
+                    message: `${insertResult.rowCount} staff members assigned to department`,
+                    assigned_staff_ids: validStaffIds,
+                    invalid_staff_ids: invalidStaffIds
                 })
-
-            }
+            };
 
         } catch (error) {
-            console.log('error: ', error)
+            console.error('Error assigning staff:', error);
             return context.res = {
                 status: 500,
                 success: false,
-                body: JSON.stringify({
-                    error: error.message
-                })
-            }
+                body: JSON.stringify({ error: 'Internal Server Error' })
+            };
         } finally {
             if (client) {
                 await closeDb(client);
             }
+
         }
     }
-})
+});

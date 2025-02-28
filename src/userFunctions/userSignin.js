@@ -57,7 +57,7 @@ app.http("userSignin", {
             }
 
             const token = jwt.sign(
-                { id: user.id, email: user.email, role: user.is_superuser ? "admin" : "staff" },
+                { id: user.id, email: user.email},
                 process.env.SECRET_KEY,
                 { expiresIn: '1h' }
             )
@@ -65,6 +65,18 @@ app.http("userSignin", {
             const update_lastlogin = `UPDATE userTable SET last_login = NOW() WHERE id=$1`
             await client.query(update_lastlogin, [user.id])
 
+
+            // const userWithRoleResult = await client.query(
+            //     `SELECT u.id, u.first_name, u.last_name, u.email, u.country_code, u.phone, r.role_name, u.last_login, u.date_joined, u.invitation_status, u.is_staff
+            //         FROM userTable AS u
+            //         JOIN roles AS r 
+            //             ON u.role_id = r.id
+            //         WHERE u.id = $1
+            //     `,[user.role_id]
+            // )
+
+            // const data = userWithRoleResult.rows[0];
+            // console.log(data, "datas")
 
             return context.res = {
                 status: 200,
@@ -79,12 +91,12 @@ app.http("userSignin", {
                         last_name: user.last_name,
                         country_code: user.country_code,
                         phone: user.phone,
-                        role: user.is_superuser ? "admin" : "staff",
+                        role: user.role_id,
+                        invitation_status: user.invitation_status,
                         last_login: new Date()
 
                     }
                 })
-
             }
         }
 
