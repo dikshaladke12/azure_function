@@ -21,7 +21,7 @@ app.http('createUser', {
             // Parse JSON
             const body = JSON.parse(bodyText);
             const { name, email, age, password } = body;
-            if (!name || !email || !age ||!password) {
+            if (!name || !email || !age || !password) {
                 return context.res = {
                     status: 400,
                     success: false,
@@ -36,7 +36,7 @@ app.http('createUser', {
             await createUserTable();
 
             const query = 'INSERT INTO users (name, email, age, password) VALUES ($1, $2, $3, $4) RETURNING *';
-            const values = [name, email, age,hashedPassword]
+            const values = [name, email, age, hashedPassword]
             const result = await client.query(query, values);
 
             return context.res = {
