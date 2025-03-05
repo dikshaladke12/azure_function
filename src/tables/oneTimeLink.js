@@ -4,7 +4,6 @@ const oneTimeLink = async () => {
     const client = connect_client();
     try {
         await connectDb(client);
-        console.log("ggggggggggggggggggg")
         const query = `
             CREATE TABLE IF NOT EXISTS onetimelink (
                 id SERIAL PRIMARY KEY,

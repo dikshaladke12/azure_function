@@ -4,7 +4,6 @@ const createDepartment = async()=>{
     const client = connect_client();
     try {
         await connectDb(client);
-        // console.log("ggggggggggggggggggg")
         const query = `
             CREATE TABLE IF NOT EXISTS department (
             id SERIAL PRIMARY KEY,
