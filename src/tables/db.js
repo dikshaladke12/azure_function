@@ -1,4 +1,5 @@
 const { Client } = require('pg')
+require('dotenv').config();
 
 
 const connectDb = async (client) => {
@@ -17,7 +18,7 @@ const connect_client = () => {
         user: 'postgres',
         host: '127.0.0.1',
         database: 'user_database1',
-        password: 'postgres',
+        password: process.env.POSTGRES_PASS,
         port: 5432,
     })
 

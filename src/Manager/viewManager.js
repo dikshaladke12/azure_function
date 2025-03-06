@@ -11,12 +11,13 @@ app.http('viewManager', {
             const url = new URL(req.url);
             const manager_id = url.searchParams.get('manager_id');
             if (!manager_id) {
-                return context.res = {
+                context.res = {
                     status: 400,
                     body: JSON.stringify({
                         error: 'manager ID is required'
                     })
                 }
+                return;
             }
             const result = await client.query(
                 `
@@ -29,12 +30,13 @@ app.http('viewManager', {
             )
             console.log('result', result.rows)
             if (result.rows.length === 0) {
-                return context.res = {
+                context.res = {
                     status: 404,
                     body: JSON.stringify({
                         error: 'manager not found'
                     })
                 };
+                return
             }
 
             return context.res = {
@@ -44,12 +46,13 @@ app.http('viewManager', {
 
         } catch (error) {
             console.error('Error while getting manager', error);
-            return context.res = {
+            context.res = {
                 status: 500,
                 body: JSON.stringify({
                     error: error.message
                 })
             }
+            return
         } finally {
             if (client) {
                 await closeDb(client);

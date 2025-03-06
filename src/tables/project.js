@@ -21,9 +21,7 @@ const project = async () => {
                 updated_at TIMESTAMP,
                 is_deleted BOOLEAN DEFAULT FALSE,
                 timeline_id INTEGER,
-                CONSTRAINT fk_project_timeline FOREIGN KEY (timeline_id)
-                    REFERENCES public.project_timeline (id)
-                    ON DELETE SET NULL            
+                FOREIGN KEY (timeline_id) REFERENCES project_timeline(id) ON DELETE CASCADE        
             )`;
         console.log("Project table created successfully");
         await client.query(query);

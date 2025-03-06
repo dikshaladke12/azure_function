@@ -13,7 +13,6 @@ app.http("addProject", {
             const body = JSON.parse(bodyText);
             let { project_name, project_number, description, address, project_manager_id, start_date, end_date, project_timeline } = body
 
-            // If project_name is missing or empty and address is provided, default project_name to address
             if ((!project_name || project_name.trim() === '') && address) {
                 project_name = address;
             }
@@ -27,13 +26,22 @@ app.http("addProject", {
                     })
                 }
             }
+          
+
+            if (!project_timeline) {
+                const defaultTimeline = await client.query(
+                    `SELECT id FROM project_timeline WHERE timeline_type = 'monthly' LIMIT 1`
+                );
+                project_timeline = defaultTimeline.rows.length ? defaultTimeline.rows[0].id : null;
+            }
+
             await project();
 
             const checkManager = await client.query(
                 `
                     SELECT * 
                     FROM userTable
-                    WHERE id=$1 AND is_manager= true
+                    WHERE id=$1 AND is_manager= true;
                 `, [project_manager_id]
             )
             if (checkManager.rowCount === 0) {
@@ -49,7 +57,7 @@ app.http("addProject", {
                 `
                     SELECT * 
                     FROM project_timeline
-                    WHERE id=$1
+                    WHERE id=$1;
                 `, [project_timeline]
             )
             if (checkTimeline.rowCount === 0) {
@@ -63,9 +71,9 @@ app.http("addProject", {
             }
 
             const query = `
-                INSERT INTO project (project_name, project_number, description, address, project_manager_id, start_date, end_date, project_timeline)
+                INSERT INTO project (project_name, project_number, description, address, project_manager_id, start_date, end_date, timeline_id)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-                RETURNING *
+                RETURNING *;
             `;
             const values = [project_name, project_number, description, address, project_manager_id, start_date, end_date, project_timeline]
             const result = await client.query(query, values);

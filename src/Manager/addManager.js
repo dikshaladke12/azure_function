@@ -14,13 +14,14 @@ app.http("addManager", {
             const body = JSON.parse(bodyText);
             const { first_name, last_name, email, country_code, phone } = body;
             if (!first_name || !last_name || !email || !country_code || !phone) {
-                return context.res = {
+                context.res = {
                     status: 400,
                     success: false,
                     body: JSON.stringify({
                         error: "All fields are required"
                     })
                 }
+                return
             }
             await connectDb(client);
 
@@ -30,13 +31,14 @@ app.http("addManager", {
             const superuserID = countResult.rows[0].id;
 
             if (countResult === 0) {
-                return context.res = {
+                context.res = {
                     status: 403,
                     success: false,
                     body: JSON.stringify({
                         error: "No superuser exists. Cannot add staff without a superuser."
                     })
                 };
+                return
             }
 
 
@@ -93,7 +95,7 @@ app.http("addManager", {
                 }
             )
 
-            return context.res = {
+            context.res = {
                 status: 200,
                 success: true,
                 body: JSON.stringify({
@@ -101,17 +103,17 @@ app.http("addManager", {
                     body: result.rows[0]
                 })
             }
-        }
-
-        catch (error) {
+            return
+        } catch (error) {
             console.error('Error while adding the manager', error);
-            return context.res = {
+            context.res = {
                 status: 500,
                 success: false,
                 body: JSON.stringify({
                     error: error.message
                 })
             }
+            return
 
         } finally {
             if (client) {

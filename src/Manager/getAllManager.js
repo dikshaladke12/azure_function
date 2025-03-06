@@ -23,7 +23,7 @@ app.http('getAllManager', {
                     WHERE u.is_manager = true 
                     AND (u.first_name ILIKE $1 OR u.last_name ILIKE $1 OR u.email ILIKE $1)
                     LIMIT $2 OFFSET $3
-                `, 
+                `,
                 [`%${search}%`, limit, offset]
             );
 
@@ -37,15 +37,16 @@ app.http('getAllManager', {
             const totalPages = Math.ceil(totalRecords / limit);
 
             if (result.rows.length === 0) {
-                return context.res = {
+                context.res = {
                     status: 404,
                     body: JSON.stringify({
                         error: 'manager not found'
                     })
                 };
+                return;
             }
 
-            return context.res = {
+            context.res = {
                 status: 200,
                 body: JSON.stringify({
                     success: true,
@@ -58,15 +59,17 @@ app.http('getAllManager', {
                     }
                 })
             };
+            return;
 
         } catch (error) {
             console.error('Error while getting manager list', error);
-            return context.res = {
+            context.res = {
                 status: 500,
                 body: JSON.stringify({
                     error: error.message
                 })
             };
+            return;
         } finally {
             if (client) {
                 await closeDb(client);
