@@ -36,13 +36,14 @@ app.http('viewManager', {
                         error: 'manager not found'
                     })
                 };
-                return
+                return;
             }
 
-            return context.res = {
+             context.res = {
                 status: 200,
                 body: JSON.stringify(result.rows[0])
             };
+            return;
 
         } catch (error) {
             console.error('Error while getting manager', error);
@@ -52,7 +53,7 @@ app.http('viewManager', {
                     error: error.message
                 })
             }
-            return
+            return;
         } finally {
             if (client) {
                 await closeDb(client);

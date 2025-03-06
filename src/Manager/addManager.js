@@ -21,7 +21,7 @@ app.http("addManager", {
                         error: "All fields are required"
                     })
                 }
-                return
+                return;
             }
             await connectDb(client);
 
@@ -38,7 +38,7 @@ app.http("addManager", {
                         error: "No superuser exists. Cannot add staff without a superuser."
                     })
                 };
-                return
+                return;
             }
 
 
@@ -103,7 +103,7 @@ app.http("addManager", {
                     body: result.rows[0]
                 })
             }
-            return
+            return;
         } catch (error) {
             console.error('Error while adding the manager', error);
             context.res = {
@@ -113,7 +113,7 @@ app.http("addManager", {
                     error: error.message
                 })
             }
-            return
+            return;
 
         } finally {
             if (client) {
